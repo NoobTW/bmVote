@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Meteor 第六屆板主票選即時得票數</title>
+		<meta charset="UTF8">
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/tocas-ui/2.3.3/tocas.css">
+		<script src="//cdnjs.cloudflare.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+		<script src="//cdnjs.cloudflare.com/ajax/libs/tocas-ui/2.3.3/tocas.js"></script>
+		<style>
+			body {
+				background: #F4F4F4
+			}
+
+			.title.segment {
+				background: #EEE
+			}
+
+			.ts.segment {
+				padding: 4px 1em
+			}
+
+			.ts.progress {
+				margin-top: .5rem !important;
+				margin-bottom: .5rem !important
+			}
+
+			.ts.progress .bar {
+				height: 1.60em;
+				line-height: 1.05em
+			}
+
+			[data-sort] {
+				margin: 15px 0
+			}
+
+			[data-fav] {
+				float: right;
+			    margin-top: -3px
+			}
+
+			.star.icon:not(.empty) {
+				color: #ffac00
+			}
+
+			.footer {
+				font-weight: 600
+			}
+
+			.footer span {
+				font-weight: normal
+			}
+		</style>
+		<script>
+			(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+				(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+				m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+			})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+			ga('create', 'UA-41039934-5', 'auto');
+			ga('send', 'pageview');
+			$(function() {
+				function sort(a, b) {return (Number($(b).attr('data-sort'))) > Number(($(a).attr('data-sort'))) ? 1 : -1;}
+				function sort_var(a, b) {return b - a;}
+				$('body').on('click', '[data-fav]', function() {
+					fav = (localStorage.getItem('bmvote_fav') || '');
+					if(fav.indexOf($(this).attr('data-fav')) == -1) {
+						localStorage.setItem('bmvote_fav', fav + $(this).attr('data-fav') + ',');
+						$(this).find('i').removeClass('empty');
+						$(this).parent().parent().attr('data-sort',Number($(this).parent().parent().attr('data-sort')) + 10000000);
+						ts('.snackbar').snackbar({content: $(this).attr('data-fav') + ' 已置頂。'});
+					}
+					else {
+						localStorage.setItem('bmvote_fav', fav.replace($(this).attr('data-fav') + ',',''));
+						$(this).find('i').addClass('empty');
+						$(this).parent().parent().attr('data-sort',Number($(this).parent().parent().attr('data-sort')) - 10000000);
+						ts('.snackbar').snackbar({content: $(this).attr('data-fav') + ' 已取消置頂。'});
+					}
+					$('.container [data-sort]').sort(sort).appendTo('.container');
+				});
+				var fav = (localStorage.getItem('bmvote_fav') || '').split(',');
+				$.ajax({
+					url: 'https://api.omwu.me/bmvote/index.php',
+					dataType: 'jsonp',
+					success: function(res) {
+						$('.container').append('擷取於 ' + res.time + ' / Made by <a href="https://omwu.me" target="_blank">Henry Wu</a><div class="ts primary message">資料由系統自動抓取留言分析，不代表官方正式結果。<br>排序：星號（置頂）＞總票數＞熱門</div>')
+						$('.loading_').remove();
+						var count = 99;
+						$.each(res.data, function(b, board) {
+							count--;
+							var total = 0;
+							var chart = '';
+							var mu;
+							var max = Array();
+							if(fav.indexOf(b) == -1) {
+								empty = 'empty ';
+								mu = 0;
+							} else {
+								empty = '';
+								mu = 10000000;
+							}
+							$.each(board.vote, function(m, master) {
+								total += master;
+								max.push(master);
+							});
+							max.sort(sort_var);
+							if(board.mode == 0) {
+								max = [0,0];
+								if(board.max == '2') {
+									if(board.vote['1'] > board.vote['2']) max[0] = board.vote['1'];
+									board.vote = {"+":board.vote['1'],"-":board.vote['2']};
+								} else if(board.max == '6') {
+									board.vote = {"+A":board.vote['1'] + board.vote['2'] + board.vote['4'],"-A":board.vote['5'] + board.vote['6'],"+B": board.vote['1'] + board.vote['3'] + board.vote['5'],"-B":  board.vote['4'] + board.vote['6']};
+									total = board.vote['+A'] + board.vote['+B'] + board.vote['-A'] + board.vote['-B'];
+								}
+							}
+							$.each(board.vote, function(m, master) {
+								var style = '';
+								var width = master/total*100;
+								if(master == max[0] || master == max[1] || (m == '+A' && board.vote['+A'] > board.vote['-A']) || (m == '+B' && board.vote['+B'] > board.vote['-B'])) style = 'primary ';
+								if(m == '+A' || m == '-A') width = master/(board.vote['+A'] + board.vote['-A'])*100;
+								if(m == '+B' || m == '-B') width = master/(board.vote['+B'] + board.vote['-B'])*100;
+								if(m == '+B') chart += '<hr style="margin:0 10px 0 20px">';
+								if(master < 1) chart += '<div class="ts '+style+'progress"><div class="bar" style="width:6px;background:#FFF"><span style="color:#666" class="text">' + m + '</span></div></div>';
+								else chart += '<div class="ts '+style+'progress"><div class="bar" style="width:6px;background:#FFF"><span style="color:#666" class="text">' + m + '</span></div><div class="bar" style="width: ' + width + '%"><span class="text">' + master + '</span></div></div>';
+							});							
+							if(board.mode == 1) rule = '（最高票的兩位當選）';
+							else rule = '（同意多於反對者當選）';
+							board.info = board.info.replace('[FOR6]','<br>+A：同意 A 參選人<br>-A：反對 A 參選人<br>+B：同意 B 參選人<br>-B：反對 B 參選人').replace('[FOR2]','<br>+：同意參選人<br>-：反對參選人');
+							var base = '<div data-sort="'+(total+mu+(count*0.01))+'"><div class="ts top attached title segment">'+b+rule+'<button class="ts icon mini very compact button" data-fav="'+b+'"><i class="'+empty+'star icon"></i></button></div><div class="ts attached segment" style="padding-left:0">'+chart+'</div><div class="ts bottom attached footer segment">'+board.info+'<br><a href="https://meteor.today/article/share/'+board.id+'" target="_blank"><i class="external icon"></i>前往投票</a>'+'</div></div>';
+							$('.container').append(base);
+						});
+						$('.container [data-sort]').sort(sort).appendTo('.container');
+					},
+					error: function() {
+						$('.loading_').remove();
+						alert('Server error');
+					}
+				})
+			});
+		</script>
+	</head>
+	<body>
+		<br>
+		<div class="ts very narrow container">
+			<div class="ts large header">Meteor 第六屆板主票選即時得票數</div>
+			<div class="ts active loader big loading_" style="margin:40vh auto 0"></div>
+		</div>
+		<br><br><br>
+		<div class="ts snackbar"><div class="content"></div></div>
+	</body>
+</html>
