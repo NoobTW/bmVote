@@ -117,7 +117,7 @@
 							}
 							$.each(board.vote, function(m, master) {
 								var style = '';
-								var width = master*(max/total)*100;
+								var width = master*(max[0]/total)*100;
 								if(master == max[0] || master == max[1] || (m == '+A' && board.vote['+A'] > board.vote['-A']) || (m == '+B' && board.vote['+B'] > board.vote['-B'])) style = 'primary ';
 								if(m == '+A' || m == '-A') width = master/(board.vote['+A'] + board.vote['-A'])*100;
 								if(m == '+B' || m == '-B') width = master/(board.vote['+B'] + board.vote['-B'])*100;
