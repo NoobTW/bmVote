@@ -27,7 +27,8 @@
 
 			.ts.progress .bar {
 				height: 1.60em;
-				line-height: 1.05em
+				line-height: 1.05em;
+				min-width: auto !important
 			}
 
 			[data-sort] {
@@ -121,8 +122,8 @@
 								if(m == '+A' || m == '-A') width = master/(board.vote['+A'] + board.vote['-A'])*100;
 								if(m == '+B' || m == '-B') width = master/(board.vote['+B'] + board.vote['-B'])*100;
 								if(m == '+B') chart += '<hr style="margin:0 10px 0 20px">';
-								if(master < 1) chart += '<div class="ts '+style+'progress"><div class="bar" style="width:6px;background:#FFF"><span style="color:#666" class="text">' + m + '</span></div></div>';
-								else chart += '<div class="ts '+style+'progress"><div class="bar" style="width:6px;background:#FFF"><span style="color:#666" class="text">' + m + '</span></div><div class="bar" style="width: ' + width + '%"><span class="text">' + master + '</span></div></div>';
+								if(master < 1) chart += '<div class="ts '+style+'progress"><div class="bar" style="width:20px;background:#FFF"><span style="color:#666" class="text">' + m + '</span></div></div>';
+								else chart += '<div class="ts '+style+'progress"><div class="bar" style="width:20px;background:#FFF"><span style="color:#666" class="text">' + m + '</span></div><div class="bar" style="width: ' + width + '%"><span class="text">' + master + '</span></div></div>';
 							});							
 							if(board.mode == 1) rule = '（最高票的兩位當選）';
 							else rule = '（同意多於反對者當選）';
