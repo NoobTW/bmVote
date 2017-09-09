@@ -81,7 +81,7 @@
 				});
 				var fav = (localStorage.getItem('bmvote_fav') || '').split(',');
 				$.ajax({
-					url: 'https://api.omwu.me/bmvote/index.php',
+					url: 'https://test-omwu.rhcloud.com/bmvote/index.php',
 					dataType: 'jsonp',
 					success: function(res) {
 						$('.container').append('擷取於 ' + res.time + ' / Made by <a href="https://omwu.me" target="_blank">Henry Wu</a><div class="ts primary message">資料由系統自動抓取留言分析，不代表官方正式結果。<br>排序：星號（置頂）＞總票數＞熱門</div>')
